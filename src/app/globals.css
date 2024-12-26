@@ -2,20 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    @apply bg-dark-950 text-text-primary;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .pattern-background {
+    position: relative;
+    background-color: #00152E;
+    background-image: 
+      radial-gradient(#FF204E 0.5px, transparent 0.5px),
+      radial-gradient(#FF204E 0.5px, #00152E 0.5px);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+    background-attachment: fixed;
+  }
+
+  .pattern-background::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+      circle at center,
+      rgba(0, 21, 46, 0.5) 0%,
+      rgba(0, 21, 46, 0.95) 100%
+    );
+    pointer-events: none;
+  }
+
+  .pattern-background > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white dark:bg-card-dark/90 rounded-lg shadow-lg transition-all duration-200 
+           hover:shadow-xl dark:hover:bg-card-hover/95 border border-gray-100 dark:border-dark-800;
+    backdrop-filter: blur(8px);
+  }
 }

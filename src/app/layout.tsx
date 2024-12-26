@@ -17,10 +17,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} dark:bg-dark-950`}>
+    <html lang="en" suppressHydrationWarning className="dark">
+      <body className={`${inter.className} min-h-screen`}>
         <Providers>
-          <RootLayoutClient>{children}</RootLayoutClient>
+          <main className="pattern-background min-h-screen">
+            <RootLayoutClient>{children}</RootLayoutClient>
+          </main>
         </Providers>
       </body>
     </html>

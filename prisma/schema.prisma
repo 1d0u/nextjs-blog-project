@@ -16,12 +16,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?
-  access_token      String?
+  refresh_token     String? @db.String
+  access_token      String? @db.String
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?
+  id_token          String? @db.String
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -44,13 +44,10 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  role          String    @default("user")
   accounts      Account[]
   sessions      Session[]
   posts         Post[]
-  comments      Comment[]
 }
 
 model VerificationToken {
@@ -63,45 +60,24 @@ model VerificationToken {
 }
 
 model Post {
-  id            String     @id @default(auto()) @map("_id") @db.ObjectId
-  title         String
-  slug          String     @unique
-  content       String
-  excerpt       String?
-  published     Boolean    @default(false)
-  featuredImage String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  author        User       @relation(fields: [authorId], references: [id])
-  authorId      String     @db.ObjectId
-  categories    Category[] @relation(fields: [categoryIds], references: [id])
-  categoryIds   String[]   @db.ObjectId
-  comments      Comment[]
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String   @unique
+  content     String
+  excerpt     String?
+  published   Boolean  @default(false)
+  categoryId  String   @db.ObjectId
+  authorId    String   @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  category    Category @relation(fields: [categoryId], references: [id])
+  author      User     @relation(fields: [authorId], references: [id])
 }
 
 model Category {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  name        String   @unique
+  name        String
   slug        String   @unique
   description String?
-  posts       Post[]   @relation(fields: [postIds], references: [id])
-  postIds     String[] @db.ObjectId
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Comment {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  author    User     @relation(fields: [authorId], references: [id])
-  authorId  String   @db.ObjectId
-  post      Post     @relation(fields: [postId], references: [id])
-  postId    String   @db.ObjectId
-}
-
-enum Role {
-  USER
-  ADMIN
+  posts       Post[]
 }
