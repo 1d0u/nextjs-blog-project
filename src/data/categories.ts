@@ -1,20 +1,23 @@
 export const categories = [
   {
     id: '1',
-    name: 'Teknoloji',
-    slug: 'teknoloji',
-    description: 'Yazılım, donanım ve teknoloji dünyasından en son gelişmeler.',
+    name: 'Technology',
+    slug: 'technology',
+    description: 'Latest developments from the world of software, hardware, and technology.',
+    postCount: 0
   },
   {
     id: '2',
-    name: 'Yaşam',
-    slug: 'yasam',
-    description: 'Günlük yaşam, sağlık ve kişisel gelişim üzerine yazılar.',
+    name: 'Lifestyle',
+    slug: 'lifestyle',
+    description: 'Articles about daily life, health, and personal development.',
+    postCount: 0
   },
   {
     id: '3',
-    name: 'Seyahat',
-    slug: 'seyahat',
-    description: "Dünyanın dört bir yanından gezi notları ve seyahat tavsiyeleri.",
+    name: 'Travel',
+    slug: 'travel',
+    description: "Travel notes and advice from around the world.",
+    postCount: 0
   },
 ] 

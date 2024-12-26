@@ -1,22 +1,24 @@
-export interface Post {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt?: string;
-  content: string;
-  featuredImage?: string;
-  category: {
-    id: string;
-    name: string;
-    slug: string;
-  };
+export type Post = {
+  id: string
+  title: string
+  slug: string
+  excerpt: string | null
+  content: string | null
+  featuredImage: string | null
+  published: boolean
+  createdAt: Date
+  updatedAt: Date
   author: {
-    id: string;
-    name: string;
-    image?: string;
-  };
-  publishedAt: string;
-  readingTime: string;
+    id: string
+    name: string | null
+    image: string | null
+    email: string | null
+  }
+  category: {
+    id: string
+    name: string
+    slug: string
+  }
 }
 
 export interface Category {

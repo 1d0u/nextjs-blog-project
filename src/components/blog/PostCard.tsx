@@ -1,6 +1,6 @@
 'use client'
 
-import { Post } from '@/types/blog'
+import { Post } from '@/types'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -8,12 +8,12 @@ interface PostCardProps {
   post: Post
 }
 
-const DEFAULT_IMAGE = '/images/placeholder.jpg'
-const DEFAULT_AVATAR = '/images/placeholder-avatar.jpg'
-
-export default function PostCard({ post }: PostCardProps) {
+const PostCard = ({ post }: PostCardProps) => {
+  const DEFAULT_IMAGE = 'https://picsum.photos/1200/800'
+  const DEFAULT_AVATAR = 'https://ui-avatars.com/api/?name=Author&size=40&background=random'
+  
   return (
-    <div className="flex flex-col overflow-hidden rounded-lg shadow-lg bg-white dark:bg-dark-800 transition-colors">
+    <div className="flex flex-col overflow-hidden rounded-lg shadow-lg bg-white dark:bg-dark-800 hover:dark:bg-dark-700 transition-all duration-300">
       <div className="flex-shrink-0">
         <Link href={`/blog/${post.slug}`}>
           <div className="relative h-48 w-full">
@@ -33,12 +33,12 @@ export default function PostCard({ post }: PostCardProps) {
             href={`/categories/${post.category.slug}`}
             className="inline-block"
           >
-            <span className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">
+            <span className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-accent-500/10 text-accent-500">
               {post.category.name}
             </span>
           </Link>
-          <Link href={`/blog/${post.slug}`} className="mt-2 block">
-            <p className="text-xl font-semibold text-gray-900 dark:text-white">{post.title}</p>
+          <Link href={`/blog/${post.slug}`} className="mt-2 block group">
+            <p className="text-xl font-semibold text-accent-500 group-hover:text-accent-400 transition-colors">{post.title}</p>
             <p className="mt-3 text-base text-gray-500 dark:text-gray-400">{post.excerpt}</p>
           </Link>
         </div>
@@ -71,4 +71,6 @@ export default function PostCard({ post }: PostCardProps) {
       </div>
     </div>
   )
-} 
+}
+
+export default PostCard 

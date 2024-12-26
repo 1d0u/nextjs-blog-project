@@ -1,122 +1,129 @@
-import { posts } from '@/data/posts'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Post } from '@/types/blog'
-import ThemeSwitcher from '@/components/ThemeSwitcher'
+import { prisma } from '@/lib/prisma'
+import { PostWithRelations } from '@/types'
+import { ArrowLeftIcon, ShareIcon, BookmarkIcon } from '@heroicons/react/24/outline'
 
-interface PageProps {
+const PLACEHOLDER_IMAGE = 'https://picsum.photos/1200/800'
+const PLACEHOLDER_AVATAR = 'https://ui-avatars.com/api/?name=Author&size=40&background=random'
+
+interface BlogPostPageProps {
   params: {
     slug: string
   }
 }
 
-export async function generateStaticParams() {
-  return posts.map((post) => ({
-    slug: post.slug,
-  }))
+async function getPost(slug: string): Promise<PostWithRelations | null> {
+  try {
+    const post = await prisma.post.findUnique({
+      where: { slug },
+      include: {
+        author: true,
+        category: true
+      }
+    })
+
+    if (!post) return null
+
+    return post as PostWithRelations
+  } catch (error) {
+    console.error('Error fetching post:', error)
+    return null
+  }
 }
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
-export default async function Page({ params }: PageProps) {
-  const findPost = async () => {
-    await Promise.resolve()
-    return posts.find((post) => post.slug === params.slug)
-  }
-
-  const post = await findPost()
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const post = await getPost(params.slug)
 
   if (!post) {
     notFound()
   }
 
   return (
-    <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <ThemeSwitcher />
-      {/* Hero Section */}
-      <div className="relative h-96 w-full mb-8">
-        <Image
-          src={post.featuredImage || '/images/placeholder.jpg'}
-          alt={post.title}
-          fill
-          className="object-cover rounded-lg shadow-xl"
-          priority
-        />
-      </div>
-
-      {/* Article Header */}
-      <div className="mb-8">
-        <Link
-          href={`/categories/${post.category.slug}`}
-          className="inline-block mb-4"
+    <div className="min-h-screen py-12">
+      <article className="mx-auto w-full max-w-2xl px-4">
+        {/* Back Button */}
+        <Link 
+          href="/" 
+          className="group mb-8 inline-flex items-center gap-2 text-sm text-[#71717A] transition-colors hover:text-white"
         >
-          <span className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-accent-500/10 dark:bg-accent-500/20 text-accent-500 dark:text-accent-300">
-            {post.category.name}
-          </span>
+          <ArrowLeftIcon className="h-4 w-4" />
+          <span>Back to Home</span>
         </Link>
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-accent-500 mb-4">
-          {post.title}
-        </h1>
-        <div className="flex items-center space-x-4">
-          <div className="flex-shrink-0">
-            <div className="relative h-10 w-10">
+
+        {/* Featured Image */}
+        <div className="relative mb-8 h-[400px] w-full overflow-hidden rounded-xl bg-[#1C1C1C]">
+          <Image
+            src={post.featuredImage || PLACEHOLDER_IMAGE}
+            alt={post.title}
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
+
+        {/* Article Header */}
+        <div className="mb-8">
+          {post.category && (
+            <span className="tag mb-4 inline-block">
+              {post.category.name}
+            </span>
+          )}
+          <h1 className="mb-4 text-3xl font-bold text-white">
+            {post.title}
+          </h1>
+          {post.excerpt && (
+            <p className="text-[#71717A]">
+              {post.excerpt}
+            </p>
+          )}
+        </div>
+
+        {/* Meta Info */}
+        <div className="mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="relative h-10 w-10 overflow-hidden rounded-full">
               <Image
-                className="rounded-full ring-2 ring-accent-500/20"
-                src={post.author.image || '/images/placeholder-avatar.jpg'}
-                alt={post.author.name}
+                src={post.author?.image || PLACEHOLDER_AVATAR}
+                alt={post.author?.name || 'Yazar'}
                 fill
+                className="object-cover"
               />
             </div>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-900 dark:text-text-light">
-              {post.author.name}
-            </p>
-            <div className="flex space-x-1 text-sm text-gray-500 dark:text-text-secondary">
-              <time dateTime={post.publishedAt}>
-                {new Date(post.publishedAt).toLocaleDateString('tr-TR', {
+            <div>
+              <p className="font-medium text-white">
+                {post.author?.name}
+              </p>
+              <time className="text-sm text-[#71717A]">
+                {new Date(post.createdAt).toLocaleDateString('tr-TR', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
                 })}
               </time>
-              <span aria-hidden="true">&middot;</span>
-              <span>{post.readingTime}</span>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Article Content */}
-      <div className="prose prose-lg dark:prose-invert max-w-none">
-        <p className="text-gray-500 dark:text-text-secondary text-lg mb-8">
-          {post.excerpt}
-        </p>
-        <div className="text-gray-900 dark:text-text-primary whitespace-pre-wrap">
-          {post.content}
-        </div>
-      </div>
-
-      {/* Article Footer */}
-      <div className="mt-16 border-t border-gray-200 dark:border-dark-700 pt-8">
-        <div className="flex justify-between items-center">
-          <Link
-            href="/"
-            className="text-accent-500 hover:text-accent-400 transition-colors duration-200"
-          >
-            ← Ana Sayfaya Dön
-          </Link>
-          <div className="flex space-x-4">
-            <button className="text-text-muted hover:text-text-secondary transition-colors duration-200">
-              Paylaş
+          <div className="flex items-center gap-3">
+            <button className="glass-button h-9 w-9 !p-0">
+              <ShareIcon className="h-4 w-4 text-white/80" />
             </button>
-            <button className="text-text-muted hover:text-text-secondary transition-colors duration-200">
-              Kaydet
+            <button className="glass-button h-9 w-9 !p-0">
+              <BookmarkIcon className="h-4 w-4 text-white/80" />
             </button>
           </div>
         </div>
-      </div>
-    </article>
+
+        {/* Article Content */}
+        <div className="prose prose-invert max-w-none">
+          <div className="text-[#E4E4E7] [&>p]:mb-4 [&>h2]:text-xl [&>h2]:font-semibold [&>h2]:text-white [&>h2]:mt-8 [&>h2]:mb-4">
+            {post.content}
+          </div>
+        </div>
+      </article>
+    </div>
   )
 } 

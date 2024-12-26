@@ -36,34 +36,34 @@ export const posts: Post[] = [
   },
   {
     id: '2',
-    title: 'Sağlıklı Yaşam İçin 10 Altın Kural',
-    slug: 'saglikli-yasam-icin-10-altin-kural',
-    excerpt: 'Günlük rutininize ekleyebileceğiniz basit ama etkili alışkanlıklarla daha sağlıklı bir yaşama adım atın.',
+    title: '10 Golden Rules for Healthy Living',
+    slug: '10-golden-rules-for-healthy-living',
+    excerpt: 'Take a step towards a healthier life with simple but effective habits you can add to your daily routine.',
     content: `
-      Sağlıklı bir yaşam sürmek, sandığınız kadar zor değil. İşte size günlük hayatınıza kolayca ekleyebileceğiniz 10 altın kural:
+      Living a healthy life is not as difficult as you think. Here are 10 golden rules you can easily add to your daily life:
 
-      1. Günde en az 8 bardak su için
-      2. Düzenli egzersiz yapın
-      3. Yeterli uyku alın
-      4. Dengeli beslenin
-      5. Stresten uzak durun
-      6. Düzenli check-up yaptırın
-      7. Sosyal ilişkilerinizi güçlendirin
-      8. Hobiler edinin
-      9. Meditasyon yapın
-      10. Pozitif düşünün
+      1. Drink at least 8 glasses of water a day
+      2. Exercise regularly
+      3. Get enough sleep
+      4. Eat a balanced diet
+      5. Stay away from stress
+      6. Get regular check-ups
+      7. Strengthen your social relationships
+      8. Get hobbies
+      9. Practice meditation
+      10. Think positive
 
-      Bu kuralları hayatınıza adapte ettiğinizde, hem fiziksel hem de mental sağlığınızda önemli iyileşmeler göreceksiniz.
+      When you adapt these rules to your life, you will see significant improvements in both your physical and mental health.
     `,
     featuredImage: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b',
     category: {
       id: '2',
-      name: 'Yaşam',
-      slug: 'yasam',
+      name: 'Lifestyle',
+      slug: 'lifestyle',
     },
     author: {
       id: '2',
-      name: 'Ayşe Demir',
+      name: 'Ayse Demir',
       image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80',
     },
     publishedAt: '2024-01-14T15:30:00Z',
@@ -71,28 +71,28 @@ export const posts: Post[] = [
   },
   {
     id: '3',
-    title: 'Kapadokya\'da Unutulmaz Bir Hafta Sonu',
-    slug: 'kapadokyada-unutulmaz-bir-hafta-sonu',
-    excerpt: 'Türkiye\'nin en büyüleyici destinasyonlarından biri olan Kapadokya\'da geçirdiğim muhteşem hafta sonunu sizlerle paylaşıyorum.',
+    title: 'An Unforgettable Weekend in Cappadocia',
+    slug: 'unforgettable-weekend-in-cappadocia',
+    excerpt: 'I\'m sharing my amazing weekend in Cappadocia, one of Turkey\'s most enchanting destinations.',
     content: `
-      Kapadokya, sadece Türkiye'nin değil, dünyanın en özel yerlerinden biri. Peri bacaları, sıcak hava balonları ve eşsiz doğal güzellikleriyle unutulmaz bir deneyim sunuyor.
+      Cappadocia is one of the most special places not only in Turkey but in the world. It offers an unforgettable experience with its fairy chimneys, hot air balloons, and unique natural beauties.
 
-      ## Nerede Kalmalı?
+      ## Where to Stay?
 
-      Kapadokya'da konaklama için en iyi seçenek mağara oteller. Bu oteller size authentic bir deneyim yaşatırken, modern konforun tüm imkanlarını da sunuyor.
+      The best option for accommodation in Cappadocia is cave hotels. These hotels offer you an authentic experience while providing all the amenities of modern comfort.
 
-      ## Ne Yapmalı?
+      ## What to Do?
 
-      - Balon turu (mutlaka!)
-      - Göreme Açık Hava Müzesi
-      - Yeraltı şehirleri
-      - ATV turu
-      - Güvercinlik Vadisi
-      - Uçhisar Kalesi
+      - Balloon tour (must!)
+      - Goreme Open Air Museum
+      - Underground cities
+      - ATV tour
+      - Pigeon Valley
+      - Uchisar Castle
 
-      ## Nasıl Gitmeli?
+      ## How to Get There?
 
-      Kapadokya'ya ulaşım için en kolay yol Nevşehir Havalimanı'nı kullanmak. Havalimanından otellerın bulunduğu bölgeye transfer hizmeti alabilirsiniz.
+      The easiest way to reach Cappadocia is to use Nevsehir Airport. You can get transfer service from the airport to the hotel area.
     `,
     featuredImage: 'https://images.unsplash.com/photo-1641128324972-af3212f0f6bd',
     category: {

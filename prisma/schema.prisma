@@ -48,6 +48,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   posts         Post[]
+  profile       Profile?
 }
 
 model VerificationToken {
@@ -60,18 +61,19 @@ model VerificationToken {
 }
 
 model Post {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  slug        String   @unique
-  content     String
-  excerpt     String?
-  published   Boolean  @default(false)
-  categoryId  String   @db.ObjectId
-  authorId    String   @db.ObjectId
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  category    Category @relation(fields: [categoryId], references: [id])
-  author      User     @relation(fields: [authorId], references: [id])
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  slug          String   @unique
+  content       String
+  excerpt       String?
+  published     Boolean  @default(false)
+  featuredImage String?
+  categoryId    String   @db.ObjectId
+  authorId      String   @db.ObjectId
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  category      Category @relation(fields: [categoryId], references: [id])
+  author        User     @relation(fields: [authorId], references: [id])
 }
 
 model Category {
@@ -80,4 +82,13 @@ model Category {
   slug        String   @unique
   description String?
   posts       Post[]
+}
+
+model Profile {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  bio     String?
+  twitter String?
+  github  String?
+  userId  String  @unique @db.ObjectId
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

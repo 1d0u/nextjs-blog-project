@@ -1,7 +1,7 @@
-import { categories } from '@/data/categories'
-import { posts } from '@/data/posts'
 import { notFound } from 'next/navigation'
 import PostCard from '@/components/PostCard'
+import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { Post } from '@/types/blog'
 
 interface CategoryPageProps {
@@ -10,35 +10,58 @@ interface CategoryPageProps {
   }
 }
 
-interface Category {
-  slug: string
-  name: string
-  description?: string
-}
-
 export async function generateStaticParams() {
+  const categories = await prisma.category.findMany()
   return categories.map((category) => ({
     slug: category.slug,
   }))
 }
 
+async function getCategory(slug: string) {
+  return prisma.category.findUnique({
+    where: { slug }
+  })
+}
+
+async function getCategoryPosts(categoryId: string) {
+  const posts = await prisma.post.findMany({
+    where: { 
+      categoryId,
+      published: true 
+    },
+    include: {
+      author: {
+        select: {
+          name: true,
+          image: true,
+        }
+      },
+      category: {
+        select: {
+          name: true,
+          slug: true,
+        }
+      }
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  })
+
+  return posts.map(post => ({
+    ...post,
+    publishedAt: post.createdAt.toISOString(),
+  }))
+}
+
 export default async function CategoryPage({ params }: CategoryPageProps) {
-  // Simüle edilmiş async veri çekme
-  const category = (await new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(categories.find((category) => category.slug === params.slug))
-    }, 100)
-  })) as Category | undefined
+  const category = await getCategory(params.slug)
 
   if (!category) {
     notFound()
   }
 
-  const categoryPosts = (await new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(posts.filter((post) => post.category.slug === params.slug))
-    }, 100)
-  })) as Post[]
+  const categoryPosts = await getCategoryPosts(category.id)
 
   return (
     <div className="max-w-4xl mx-auto py-12">

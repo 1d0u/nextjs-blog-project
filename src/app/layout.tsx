@@ -1,28 +1,40 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
+import { prisma } from '@/lib/prisma'
+import Providers from '@/components/Providers'
+import Header from '@/components/layout/Header'
 import './globals.css'
-import RootLayoutClient from './RootLayoutClient'
-import { Providers } from './providers'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Modern Blog Platform',
-  description: 'A modern blog platform built with Next.js and MongoDB',
+  title: '1d0u - Development and Technology Blog',
+  description: 'Discover the latest insights, tutorials, and stories from the world of technology and development.',
 }
 
-export default function RootLayout({
+async function getCategories() {
+  const categories = await prisma.category.findMany({
+    orderBy: {
+      name: 'asc'
+    }
+  })
+  return categories
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const categories = await getCategories()
+
   return (
-    <html lang="en" suppressHydrationWarning className="dark">
-      <body className={`${inter.className} min-h-screen`}>
+    <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className="font-sans antialiased">
         <Providers>
-          <main className="pattern-background min-h-screen">
-            <RootLayoutClient>{children}</RootLayoutClient>
-          </main>
+          <div className="min-h-screen bg-background">
+            <Header categories={categories} />
+            {children}
+          </div>
         </Providers>
       </body>
     </html>

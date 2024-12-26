@@ -1,62 +1,90 @@
-import Link from 'next/link'
 import Image from 'next/image'
-import { Post } from '@/types/blog'
+import Link from 'next/link'
+
+// Placeholder görseller
+const PLACEHOLDER_IMAGE = 'https://picsum.photos/1200/800'
+const PLACEHOLDER_AVATAR = 'https://ui-avatars.com/api/?name=Author&size=40&background=random'
 
 interface PostCardProps {
-  post: Post
+  post: {
+    id: string
+    title: string
+    slug: string
+    excerpt: string | null
+    featuredImage: string | null
+    createdAt: Date
+    author: {
+      name: string | null
+      image: string | null
+    }
+    category: {
+      name: string
+      slug: string
+    }
+  }
 }
 
 export default function PostCard({ post }: PostCardProps) {
   return (
-    <Link href={`/${post.slug}`}>
-      <article className="card group overflow-hidden">
-        <div className="flex flex-col md:flex-row gap-6 p-6">
-          <div className="relative w-full md:w-48 h-48 flex-shrink-0">
-            <Image
-              src={post.featuredImage || '/images/placeholder.jpg'}
-              alt={post.title}
-              fill
-              className="object-cover rounded-lg group-hover:scale-105 transition-transform duration-200"
-            />
+    <div className="bg-secondary rounded-lg shadow-card hover:shadow-card-hover transition-all overflow-hidden">
+      <div className="relative h-48">
+        <Link href={`/posts/${post.slug}`}>
+          <Image
+            src={post.featuredImage || PLACEHOLDER_IMAGE}
+            alt={post.title}
+            fill
+            className="object-cover"
+          />
+        </Link>
+      </div>
+      <div className="p-6">
+        {post.category && (
+          <Link
+            href={`/categories/${post.category.slug}`}
+            className="inline-block mb-2"
+          >
+            <span className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-accent-purple/10 text-accent-purple">
+              {post.category.name}
+            </span>
+          </Link>
+        )}
+        <Link href={`/posts/${post.slug}`}>
+          <h2 className="text-xl font-semibold text-text-primary hover:text-primary transition-colors mb-2">
+            {post.title}
+          </h2>
+        </Link>
+        {post.excerpt && (
+          <p className="text-text-secondary mb-4 line-clamp-2">
+            {post.excerpt}
+          </p>
+        )}
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <div className="relative h-10 w-10">
+              <Image
+                className="rounded-full"
+                src={post.author?.image || PLACEHOLDER_AVATAR}
+                alt={post.author?.name || 'Author'}
+                fill
+              />
+            </div>
           </div>
-          <div className="flex-1 flex flex-col">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-accent-500/10 dark:bg-accent-500/20 text-accent-500 dark:text-accent-300">
-                {post.category.name}
-              </span>
-              <span className="text-sm text-text-muted">
-                {new Date(post.publishedAt).toLocaleDateString('tr-TR', {
+          <div className="ml-3">
+            <p className="text-sm font-medium text-text-primary">
+              {post.author?.name}
+            </p>
+            <div className="flex space-x-1 text-sm text-text-secondary">
+              <time dateTime={post.createdAt.toISOString()}>
+                {new Date(post.createdAt).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
                 })}
-              </span>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-accent-500 mb-2 group-hover:text-accent-500 dark:group-hover:text-accent-400 transition-colors duration-200">
-              {post.title}
-            </h2>
-            <p className="text-gray-500 dark:text-text-secondary mb-4 line-clamp-2">
-              {post.excerpt}
-            </p>
-            <div className="mt-auto flex items-center">
-              <div className="relative h-8 w-8">
-                <Image
-                  className="rounded-full ring-2 ring-accent-500/20"
-                  src={post.author.image || '/images/placeholder-avatar.jpg'}
-                  alt={post.author.name}
-                  fill
-                />
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-900 dark:text-text-light">
-                  {post.author.name}
-                </p>
-                <p className="text-sm text-text-muted">{post.readingTime}</p>
-              </div>
+              </time>
             </div>
           </div>
         </div>
-      </article>
-    </Link>
+      </div>
+    </div>
   )
 } 

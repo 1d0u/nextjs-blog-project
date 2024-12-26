@@ -83,22 +83,22 @@ async function seed() {
         status: 'published'
       },
       {
-        title: 'İstanbul\'da Gezilecek Yerler',
-        slug: 'istanbulda-gezilecek-yerler',
-        content: 'İstanbul\'un tarihi ve kültürel zenginlikleri saymakla bitmez. Ayasofya\'dan Topkapı Sarayı\'na, Kapalıçarşı\'dan Galata Kulesi\'ne kadar birçok tarihi mekan sizi bekliyor. Bu rehberde İstanbul\'un en güzel yerlerini ve gezi ipuçlarını bulacaksınız.',
-        excerpt: 'İstanbul\'un en güzel tarihi mekanları ve mutlaka görülmesi gereken yerleri...',
+        title: 'Places to Visit in Istanbul',
+        slug: 'places-to-visit-in-istanbul',
+        content: 'The historical and cultural richness of Istanbul is endless. From Hagia Sophia to Topkapi Palace, from Grand Bazaar to Galata Tower, many historical places await you. In this guide, you will find Istanbul\'s most beautiful places and travel tips.',
+        excerpt: 'The most beautiful historical places in Istanbul and must-see locations...',
         featuredImage: 'https://picsum.photos/800/400?random=3',
         author: adminUser._id,
         category: categories[2]._id,
         status: 'published'
       }
     ]);
-    console.log('Blog yazıları oluşturuldu!');
+    console.log('Blog posts created!');
 
-    console.log('Demo veriler başarıyla oluşturuldu!');
+    console.log('Demo data successfully created!');
     process.exit(0);
   } catch (error) {
-    console.error('Hata:', error);
+    console.error('Error:', error);
     process.exit(1);
   }
 }
