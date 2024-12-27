@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { prisma } from '@/lib/prisma'
-import Providers from '@/components/Providers'
+import Providers from '../components/Providers'
 import Header from '@/components/layout/Header'
 import './globals.css'
 

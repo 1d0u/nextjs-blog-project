@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import NewPostForm from '@/components/post/NewPostForm'
+import NewPostForm from '../../../components/post/NewPostForm'
 
 export default async function NewPostPage() {
   const session = await getServerSession(authOptions)
