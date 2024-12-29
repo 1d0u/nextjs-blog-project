@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useEditor, EditorContent } from '@tiptap/react'
@@ -21,6 +21,7 @@ import {
   Image as ImageIcon,
   Link as LinkIcon,
 } from 'lucide-react'
+import { PostWithRelations } from '@/types'
 
 type Category = {
   id: string
@@ -30,16 +31,18 @@ type Category = {
 
 type NewPostFormProps = {
   categories: Category[]
+  initialData?: PostWithRelations
+  onSuccess?: (post: PostWithRelations) => void
 }
 
-export default function NewPostForm({ categories }: NewPostFormProps) {
+export default function NewPostForm({ categories, initialData, onSuccess }: NewPostFormProps) {
   const router = useRouter()
-  const [title, setTitle] = useState('')
-  const [excerpt, setExcerpt] = useState('')
-  const [categoryId, setCategoryId] = useState('')
+  const [title, setTitle] = useState(initialData?.title || '')
+  const [excerpt, setExcerpt] = useState(initialData?.excerpt || '')
+  const [categoryId, setCategoryId] = useState(initialData?.categoryId || '')
   const [featuredImage, setFeaturedImage] = useState<File | null>(null)
-  const [featuredImagePreview, setFeaturedImagePreview] = useState('')
-  const [isPublished, setIsPublished] = useState(false)
+  const [featuredImagePreview, setFeaturedImagePreview] = useState(initialData?.featuredImage || '')
+  const [isPublished, setIsPublished] = useState(initialData?.published || false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -60,7 +63,7 @@ export default function NewPostForm({ categories }: NewPostFormProps) {
         lowlight,
       }),
     ],
-    content: '',
+    content: initialData?.content || '',
     editorProps: {
       attributes: {
         class: 'prose prose-invert min-h-[500px] px-4 py-2 text-white/90 focus:outline-none',
@@ -85,7 +88,7 @@ export default function NewPostForm({ categories }: NewPostFormProps) {
 
     try {
       // Önce görseli yükleyelim
-      let featuredImageUrl = ''
+      let featuredImageUrl = featuredImagePreview
       if (featuredImage) {
         const formData = new FormData()
         formData.append('file', featuredImage)
@@ -103,34 +106,46 @@ export default function NewPostForm({ categories }: NewPostFormProps) {
         featuredImageUrl = uploadData.url
       }
 
-      // Şimdi postu oluşturalım
-      const response = await fetch('/api/posts', {
-        method: 'POST',
+      // Post verilerini hazırlayalım
+      const postData = {
+        title,
+        excerpt,
+        content: editor.getHTML(),
+        categoryId,
+        featuredImage: featuredImageUrl,
+        published: isPublished,
+      }
+
+      // Post oluştur veya güncelle
+      const url = initialData ? `/api/posts/${initialData.id}` : '/api/posts'
+      const method = initialData ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title,
-          excerpt,
-          content: editor.getHTML(),
-          categoryId,
-          featuredImage: featuredImageUrl,
-          published: isPublished,
-        }),
+        body: JSON.stringify(postData),
       })
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.message || 'Failed to create post')
+        throw new Error(data.message || `Failed to ${initialData ? 'update' : 'create'} post`)
       }
 
-      router.push('/dashboard')
-      router.refresh()
+      const savedPost = await response.json()
+
+      if (onSuccess) {
+        onSuccess(savedPost)
+      } else {
+        router.push('/dashboard/posts')
+        router.refresh()
+      }
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message)
       } else {
-        setError('An error occurred while creating the post')
+        setError(`An error occurred while ${initialData ? 'updating' : 'creating'} the post`)
       }
     } finally {
       setIsLoading(false)
@@ -252,129 +267,98 @@ export default function NewPostForm({ categories }: NewPostFormProps) {
           <label className="block text-sm font-medium text-white/90">
             Content
           </label>
-          <div className="mt-1 rounded-lg border border-white/[0.08] bg-white/5 backdrop-blur-sm overflow-hidden">
-            <div className="border-b border-white/[0.08] p-2 flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleBold().run()}
-                className={`p-2 rounded hover:bg-white/5 ${editor.isActive('bold') ? 'text-white' : 'text-white/70'}`}
-              >
-                <Bold className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleItalic().run()}
-                className={`p-2 rounded hover:bg-white/5 ${editor.isActive('italic') ? 'text-white' : 'text-white/70'}`}
-              >
-                <Italic className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleBulletList().run()}
-                className={`p-2 rounded hover:bg-white/5 ${editor.isActive('bulletList') ? 'text-white' : 'text-white/70'}`}
-              >
-                <List className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                className={`p-2 rounded hover:bg-white/5 ${editor.isActive('orderedList') ? 'text-white' : 'text-white/70'}`}
-              >
-                <ListOrdered className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                className={`p-2 rounded hover:bg-white/5 ${editor.isActive('heading', { level: 2 }) ? 'text-white' : 'text-white/70'}`}
-              >
-                <Heading2 className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                className={`p-2 rounded hover:bg-white/5 ${editor.isActive('blockquote') ? 'text-white' : 'text-white/70'}`}
-              >
-                <Quote className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-                className={`p-2 rounded hover:bg-white/5 ${editor.isActive('codeBlock') ? 'text-white' : 'text-white/70'}`}
-              >
-                <Code className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  const input = document.createElement('input')
-                  input.type = 'file'
-                  input.accept = 'image/*'
-                  input.onchange = async (e) => {
-                    const file = (e.target as HTMLInputElement).files?.[0]
-                    if (file) {
-                      const formData = new FormData()
-                      formData.append('file', file)
-                      
-                      try {
-                        const uploadResponse = await fetch('/api/upload', {
-                          method: 'POST',
-                          body: formData,
-                        })
-
-                        if (!uploadResponse.ok) {
-                          throw new Error('Failed to upload image')
-                        }
-
-                        const uploadData = await uploadResponse.json()
-                        editor.chain().focus().setImage({ src: uploadData.url }).run()
-                      } catch (error) {
-                        console.error('Error uploading image:', error)
-                      }
-                    }
-                  }
-                  input.click()
-                }}
-                className="p-2 rounded hover:bg-white/5 text-white/70"
-              >
-                <ImageIcon className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const url = window.prompt('Enter URL')
-                  if (url) {
-                    editor.chain().focus().setLink({ href: url }).run()
-                  }
-                }}
-                className={`p-2 rounded hover:bg-white/5 ${editor.isActive('link') ? 'text-white' : 'text-white/70'}`}
-              >
-                <LinkIcon className="w-4 h-4" />
-              </button>
-            </div>
+          <div className="prose-toolbar mt-1 flex items-center gap-1 rounded-t-lg border border-white/[0.08] bg-white/5 p-2">
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              className={`rounded p-2 hover:bg-white/10 ${
+                editor.isActive('bold') ? 'bg-white/10' : ''
+              }`}
+            >
+              <Bold className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              className={`rounded p-2 hover:bg-white/10 ${
+                editor.isActive('italic') ? 'bg-white/10' : ''
+              }`}
+            >
+              <Italic className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().toggleBulletList().run()}
+              className={`rounded p-2 hover:bg-white/10 ${
+                editor.isActive('bulletList') ? 'bg-white/10' : ''
+              }`}
+            >
+              <List className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().toggleOrderedList().run()}
+              className={`rounded p-2 hover:bg-white/10 ${
+                editor.isActive('orderedList') ? 'bg-white/10' : ''
+              }`}
+            >
+              <ListOrdered className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+              className={`rounded p-2 hover:bg-white/10 ${
+                editor.isActive('heading', { level: 2 }) ? 'bg-white/10' : ''
+              }`}
+            >
+              <Heading2 className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().toggleBlockquote().run()}
+              className={`rounded p-2 hover:bg-white/10 ${
+                editor.isActive('blockquote') ? 'bg-white/10' : ''
+              }`}
+            >
+              <Quote className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+              className={`rounded p-2 hover:bg-white/10 ${
+                editor.isActive('codeBlock') ? 'bg-white/10' : ''
+              }`}
+            >
+              <Code className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="rounded-b-lg border border-t-0 border-white/[0.08] bg-white/5">
             <EditorContent editor={editor} />
           </div>
         </div>
+
+        {/* Yayınlama Durumu */}
+        <div className="flex items-center">
+          <input
+            id="published"
+            type="checkbox"
+            checked={isPublished}
+            onChange={(e) => setIsPublished(e.target.checked)}
+            className="h-4 w-4 rounded border-white/[0.08] bg-white/5 text-blue-500 focus:ring-0 focus:ring-offset-0"
+          />
+          <label htmlFor="published" className="ml-2 text-sm text-white/90">
+            Publish this post
+          </label>
+        </div>
       </div>
 
-      {/* Alt Kısım - Yayınlama Seçenekleri */}
-      <div className="flex items-center justify-between border-t border-white/[0.08] pt-6">
-        <div className="flex items-center gap-4">
-          <select
-            value={isPublished ? 'published' : 'draft'}
-            onChange={(e) => setIsPublished(e.target.value === 'published')}
-            className="rounded-lg border border-white/[0.08] bg-white/5 px-4 py-2 text-sm text-white/90 backdrop-blur-sm focus:border-white/20 focus:outline-none focus:ring-0"
-          >
-            <option value="draft">Save as Draft</option>
-            <option value="published">Publish Now</option>
-          </select>
-        </div>
-
+      <div className="flex justify-end">
         <button
           type="submit"
           disabled={isLoading}
-          className="rounded-lg bg-emerald-500/90 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-black/20 transition-all duration-200 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-lg bg-blue-500/90 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
         >
-          {isLoading ? 'Saving...' : 'Save Post'}
+          {isLoading ? 'Saving...' : initialData ? 'Update Post' : 'Create Post'}
         </button>
       </div>
     </form>

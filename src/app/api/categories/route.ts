@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import slugify from '@/lib/slugify'
 
 export async function POST(request: Request) {
   try {
@@ -22,10 +23,11 @@ export async function POST(request: Request) {
     }
 
     const json = await request.json()
-    const { name, slug, description } = json
+    const { name, description, color } = json
+    const slug = slugify(name)
 
-    if (!name || !slug) {
-      return new NextResponse('Name and slug are required', { status: 400 })
+    if (!name) {
+      return new NextResponse('Name is required', { status: 400 })
     }
 
     // Slug'ın benzersiz olduğunu kontrol et
@@ -36,7 +38,7 @@ export async function POST(request: Request) {
     })
 
     if (existingCategory) {
-      return new NextResponse('A category with this slug already exists', { status: 400 })
+      return new NextResponse('A category with this name already exists', { status: 400 })
     }
 
     const category = await prisma.category.create({
@@ -44,6 +46,7 @@ export async function POST(request: Request) {
         name,
         slug,
         description,
+        color: color || '#FF5733', // Varsayılan renk
       },
     })
 

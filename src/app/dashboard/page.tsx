@@ -1,100 +1,151 @@
-import { getServerSession } from 'next-auth'
-import { redirect } from 'next/navigation'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { TagIcon } from '@heroicons/react/24/outline'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { 
+  DocumentTextIcon, 
+  FolderIcon, 
+  PlusIcon,
+  ChartBarIcon,
+  UserIcon,
+  Cog6ToothIcon
+} from '@heroicons/react/24/outline'
 
-export default async function DashboardPage() {
-  const session = await getServerSession(authOptions)
+interface DashboardStats {
+  totalPosts: number
+  totalCategories: number
+  publishedPosts: number
+  draftPosts: number
+}
 
-  if (!session?.user?.email) {
-    redirect('/auth/signin')
-  }
+export default function DashboardPage() {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalPosts: 0,
+    totalCategories: 0,
+    publishedPosts: 0,
+    draftPosts: 0
+  })
 
-  const user = await prisma.user.findUnique({
-    where: {
-      email: session.user.email
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch('/api/dashboard/stats')
+        const data = await response.json()
+        setStats(data)
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error)
+      }
     }
-  })
 
-  if (!user) {
-    redirect('/auth/signin')
-  }
+    fetchStats()
+  }, [])
 
-  const posts = await prisma.post.findMany({
-    where: {
-      authorId: user.id
+  const quickActions = [
+    {
+      title: 'New Post',
+      description: 'Create a new blog post',
+      icon: PlusIcon,
+      href: '/dashboard/new',
+      iconColor: 'text-emerald-500'
     },
-    include: {
-      category: true,
+    {
+      title: 'All Posts',
+      description: 'Manage your blog posts',
+      icon: DocumentTextIcon,
+      href: '/dashboard/posts',
+      iconColor: 'text-blue-500'
     },
-    orderBy: {
-      createdAt: 'desc',
+    {
+      title: 'Categories',
+      description: 'Manage post categories',
+      icon: FolderIcon,
+      href: '/dashboard/categories',
+      iconColor: 'text-purple-500'
     },
-  })
+    {
+      title: 'Profile',
+      description: 'Update your profile',
+      icon: UserIcon,
+      href: '/dashboard/profile',
+      iconColor: 'text-orange-500'
+    },
+    {
+      title: 'Analytics',
+      description: 'View blog statistics',
+      icon: ChartBarIcon,
+      href: '/dashboard/analytics',
+      iconColor: 'text-pink-500'
+    },
+    {
+      title: 'Settings',
+      description: 'Configure your blog',
+      icon: Cog6ToothIcon,
+      href: '/dashboard/settings',
+      iconColor: 'text-indigo-500'
+    }
+  ]
 
   return (
-    <main className="flex-1">
-      <div className="mx-auto w-full max-w-2xl px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-white">My Dashboard</h1>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/dashboard/categories"
-              className="flex items-center gap-1 rounded-lg border border-white/[0.08] bg-white/5 px-4 py-2 text-sm font-medium text-white/90 transition-colors hover:bg-white/10"
-            >
-              <TagIcon className="h-4 w-4" />
-              Categories
-            </Link>
-            <Link
-              href="/dashboard/new"
-              className="flex items-center gap-1 rounded-lg bg-emerald-500/90 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-black/20 transition-all duration-200 hover:bg-emerald-500"
-            >
-              New Post
-            </Link>
-          </div>
-        </div>
+    <div className="container mx-auto max-w-2xl px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+        <p className="mt-1 text-white/60">Manage your blog content and settings</p>
+      </div>
 
-        <div className="space-y-4">
-          {posts.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-white/70">You haven't created any posts yet.</p>
-            </div>
-          ) : (
-            posts.map((post) => (
-              <div key={post.id} className="card">
-                <div className="p-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-medium text-white">{post.title}</h2>
-                    <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${post.published ? 'bg-emerald-500/10 text-emerald-500' : 'bg-orange-500/10 text-orange-500'}`}>
-                      {post.published ? 'Published' : 'Draft'}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm text-white/70">{post.excerpt}</p>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-sm text-white/70">{post.category.name}</span>
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={`/dashboard/edit/${post.id}`}
-                        className="text-sm text-white/70 hover:text-white transition-colors"
-                      >
-                        Edit
-                      </a>
-                      <span className="text-white/40">·</span>
-                      <button
-                        className="text-sm text-red-400 hover:text-red-500 transition-colors"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
+      {/* Stats Grid */}
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-lg border border-white/[0.08] bg-white/5 p-4 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <DocumentTextIcon className="h-5 w-5 text-blue-500" />
+            <h3 className="font-medium text-white">Total Posts</h3>
+          </div>
+          <p className="mt-4 text-3xl font-semibold text-white">{stats.totalPosts}</p>
+        </div>
+        <div className="rounded-lg border border-white/[0.08] bg-white/5 p-4 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <FolderIcon className="h-5 w-5 text-purple-500" />
+            <h3 className="font-medium text-white">Categories</h3>
+          </div>
+          <p className="mt-4 text-3xl font-semibold text-white">{stats.totalCategories}</p>
+        </div>
+        <div className="rounded-lg border border-white/[0.08] bg-white/5 p-4 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <DocumentTextIcon className="h-5 w-5 text-emerald-500" />
+            <h3 className="font-medium text-white">Published</h3>
+          </div>
+          <p className="mt-4 text-3xl font-semibold text-white">{stats.publishedPosts}</p>
+        </div>
+        <div className="rounded-lg border border-white/[0.08] bg-white/5 p-4 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <DocumentTextIcon className="h-5 w-5 text-orange-500" />
+            <h3 className="font-medium text-white">Drafts</h3>
+          </div>
+          <p className="mt-4 text-3xl font-semibold text-white">{stats.draftPosts}</p>
         </div>
       </div>
-    </main>
+
+      {/* Quick Actions Grid */}
+      <div>
+        <h2 className="mb-4 text-lg font-semibold text-white">Quick Actions</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {quickActions.map((action) => (
+            <Link
+              key={action.title}
+              href={action.href}
+              className="group flex items-start gap-4 rounded-lg border border-white/[0.08] bg-white/5 p-4 backdrop-blur-sm transition-all duration-200 hover:bg-white/[0.08] hover:border-white/[0.12] hover:scale-[1.02]"
+            >
+              <div className={`mt-1 rounded-lg bg-white/5 p-2 ring-1 ring-white/[0.08] ${action.iconColor}`}>
+                <action.icon className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-medium text-white group-hover:text-white/90">{action.title}</h3>
+                <p className="mt-1 text-sm text-white/60 group-hover:text-white/70">{action.description}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 } 

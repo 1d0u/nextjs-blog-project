@@ -1,24 +1,89 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { prisma } from '@/lib/prisma'
-import { authOptions } from '@/app/api/auth/[...nextauth]/options'
+import { authOptions } from '@/lib/auth'
+import slugify from '@/lib/slugify'
 
-export async function DELETE(
+export async function PUT(
   request: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: { id: string } }
 ) {
   try {
-    const [session, params] = await Promise.all([
-      getServerSession(authOptions),
-      context.params
-    ])
+    const session = await getServerSession(authOptions)
     
-    if (!session) {
+    if (!session?.user?.email) {
       return new NextResponse('Permission denied', { status: 401 })
     }
 
     const post = await prisma.post.findUnique({
-      where: { id: params.id },
+      where: { id: context.params.id },
+      include: {
+        author: true,
+        category: true,
+      }
+    })
+
+    if (!post) {
+      return new NextResponse('Post not found', { status: 404 })
+    }
+
+    const json = await request.json()
+    const { title, content, excerpt, categoryId, featuredImage, published } = json
+
+    // Slug'ı güncelle
+    const slug = slugify(title)
+
+    // Slug'ın benzersiz olduğunu kontrol et (kendi ID'si hariç)
+    const existingPost = await prisma.post.findFirst({
+      where: {
+        slug,
+        NOT: {
+          id: context.params.id
+        }
+      }
+    })
+
+    if (existingPost) {
+      return new NextResponse('A post with this title already exists', { status: 400 })
+    }
+
+    const updatedPost = await prisma.post.update({
+      where: { id: context.params.id },
+      data: {
+        title,
+        slug,
+        content,
+        excerpt,
+        categoryId,
+        featuredImage,
+        published,
+      },
+      include: {
+        author: true,
+        category: true,
+      }
+    })
+
+    return NextResponse.json(updatedPost)
+  } catch (error) {
+    console.error('Post update error:', error)
+    return new NextResponse('Server error', { status: 500 })
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  context: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.email) {
+      return new NextResponse('Permission denied', { status: 401 })
+    }
+
+    const post = await prisma.post.findUnique({
+      where: { id: context.params.id },
       select: { authorId: true }
     })
 
@@ -26,17 +91,37 @@ export async function DELETE(
       return new NextResponse('Post not found', { status: 404 })
     }
 
-    if (post.authorId !== session.user.id) {
-      return new NextResponse('Permission denied', { status: 403 })
-    }
-
     await prisma.post.delete({
-      where: { id: params.id }
+      where: { id: context.params.id }
     })
 
     return new NextResponse(null, { status: 204 })
   } catch (error) {
     console.error('Post delete error:', error)
+    return new NextResponse('Server error', { status: 500 })
+  }
+}
+
+export async function GET(
+  request: Request,
+  context: { params: { id: string } }
+) {
+  try {
+    const post = await prisma.post.findUnique({
+      where: { id: context.params.id },
+      include: {
+        author: true,
+        category: true,
+      }
+    })
+
+    if (!post) {
+      return new NextResponse('Post not found', { status: 404 })
+    }
+
+    return NextResponse.json(post)
+  } catch (error) {
+    console.error('Post get error:', error)
     return new NextResponse('Server error', { status: 500 })
   }
 } 

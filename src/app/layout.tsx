@@ -4,6 +4,7 @@ import { GeistMono } from 'geist/font/mono'
 import { prisma } from '@/lib/prisma'
 import Providers from '../components/Providers'
 import Header from '@/components/layout/Header'
+import Footer from '@/components/Footer'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -31,9 +32,12 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="font-sans antialiased">
         <Providers>
-          <div className="min-h-screen bg-background">
+          <div className="min-h-screen bg-background flex flex-col">
             <Header categories={categories} />
-            {children}
+            <main className="flex-grow">
+              {children}
+            </main>
+            <Footer />
           </div>
         </Providers>
       </body>
